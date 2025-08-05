@@ -1,9 +1,15 @@
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:convert';
+import 'package:car_wash/screen/locationpicker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
+import 'package:location/location.dart' as loc;
+import 'package:geocoding/geocoding.dart'; // Keep this if needed for reverse geocoding
 
 class AddCompanyScreen extends StatefulWidget {
   const AddCompanyScreen({super.key});
@@ -35,13 +41,28 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
 
   Future<String?> uploadImage(File file) async {
     try {
-      String fileName =
-          'company_logos/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final ref = FirebaseStorage.instance.ref().child(fileName);
-      await ref.putFile(file);
-      return await ref.getDownloadURL();
+      const cloudName = 'dce7gwpgn';
+      const uploadPreset = 'ml_default';
+      final uri = Uri.parse(
+        'https://api.cloudinary.com/v1_1/$cloudName/image/upload',
+      );
+
+      final request = http.MultipartRequest('POST', uri)
+        ..fields['upload_preset'] = uploadPreset
+        ..files.add(await http.MultipartFile.fromPath('file', file.path));
+
+      final response = await request.send();
+      final res = await http.Response.fromStream(response);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(res.body);
+        return data['secure_url'];
+      } else {
+        print("Cloudinary upload failed: ${res.body}");
+        return null;
+      }
     } catch (e) {
-      print('Image upload failed: $e');
+      print("Cloudinary upload error: $e");
       return null;
     }
   }
@@ -59,7 +80,6 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
     });
 
     try {
-      // ✅ Create Firebase Auth user
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
             email: emailController.text.trim(),
@@ -71,7 +91,6 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
         imageUrl = await uploadImage(companyLogo!);
       }
 
-      // ✅ Save company details in Firestore
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid)
@@ -92,7 +111,6 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
         const SnackBar(content: Text("Company Registered Successfully!")),
       );
 
-      // Clear form
       nameController.clear();
       emailController.clear();
       passwordController.clear();
@@ -126,7 +144,6 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            // 🧍‍♂️ Admin Display
             const CircleAvatar(
               radius: 50,
               backgroundImage: AssetImage('assets/image/logo.JPG'),
@@ -138,14 +155,31 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
             ),
             const SizedBox(height: 30),
 
-            // 📋 Form Fields
             _buildTextField("Company Name", nameController),
             _buildTextField("Company Email", emailController),
             _buildTextField("Password", passwordController, obscure: true),
             _buildTextField("Phone Number", phoneController),
             _buildTextField("Owner Name", ownerController),
             _buildTextField("Address", addressController),
-            _buildTextField("Location", locationController),
+
+            ElevatedButton(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LocationPickerScreen(),
+                  ),
+                );
+
+                if (result != null) {
+                  setState(() {
+                    locationController.text =
+                        '${result.latitude}, ${result.longitude}';
+                  });
+                }
+              },
+              child: const Text("Pick Location on Map"),
+            ),
 
             const SizedBox(height: 20),
             GestureDetector(
@@ -168,7 +202,6 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
             ),
             const SizedBox(height: 30),
 
-            // 🔘 Submit
             isLoading
                 ? const CircularProgressIndicator()
                 : SizedBox(
@@ -208,6 +241,134 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
           labelText: label,
           border: const OutlineInputBorder(),
         ),
+      ),
+    );
+  }
+}
+
+class MapLocationPickerScreen extends StatefulWidget {
+  const MapLocationPickerScreen({super.key});
+
+  @override
+  State<MapLocationPickerScreen> createState() =>
+      _MapLocationPickerScreenState();
+}
+
+class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
+  GoogleMapController? mapController;
+  LatLng? selectedLatLng;
+  String selectedAddress = '';
+  LatLng initialPosition = const LatLng(25.276987, 55.296249);
+
+  @override
+  void initState() {
+    super.initState();
+    getUserLocation();
+  }
+
+  Future<void> getUserLocation() async {
+    loc.Location location = loc.Location();
+
+    bool _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) return;
+    }
+
+    loc.PermissionStatus _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == loc.PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != loc.PermissionStatus.granted) return;
+    }
+
+    final userLocation = await location.getLocation();
+    final TextEditingController locationController = TextEditingController();
+
+    setState(() {
+      locationController.text =
+          '${userLocation.latitude}, ${userLocation.longitude}';
+    });
+  }
+
+  Future<void> _onMapTap(LatLng latLng) async {
+    setState(() {
+      selectedLatLng = latLng;
+    });
+
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        latLng.latitude,
+        latLng.longitude,
+      );
+      final place = placemarks.first;
+      final address =
+          "${place.name}, ${place.locality}, ${place.administrativeArea}, ${place.country}";
+      setState(() {
+        selectedAddress = address;
+      });
+    } catch (e) {
+      print('Geocoding failed: $e');
+      setState(() {
+        selectedAddress = "Unable to get address.";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Pick Location")),
+      body: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: initialPosition,
+              zoom: 14,
+            ),
+            onMapCreated: (controller) => mapController = controller,
+            onTap: _onMapTap,
+            markers: selectedLatLng != null
+                ? {
+                    Marker(
+                      markerId: const MarkerId('selected'),
+                      position: selectedLatLng!,
+                    ),
+                  }
+                : {},
+          ),
+          if (selectedAddress.isNotEmpty)
+            Positioned(
+              bottom: 80,
+              left: 10,
+              right: 10,
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    selectedAddress,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+            ),
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 20,
+            child: ElevatedButton(
+              onPressed: selectedAddress.isNotEmpty
+                  ? () {
+                      Navigator.pop(context, selectedAddress);
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(16),
+                backgroundColor: const Color(0xFF1595D2),
+              ),
+              child: const Text("Select This Location"),
+            ),
+          ),
+        ],
       ),
     );
   }

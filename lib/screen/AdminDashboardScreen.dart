@@ -1,16 +1,15 @@
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:car_wash/screen/AddCompanyScreen.dart';
 import 'package:car_wash/screen/AdminReport.dart';
 import 'package:car_wash/screen/login_screen.dart';
 import 'package:car_wash/screen/show_all_feedback_screen.dart';
 import 'package:car_wash/screen/show_all_orders_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -41,24 +40,51 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     });
   }
 
+  Future<String?> uploadImageToCloudinary(File file) async {
+    try {
+      const cloudName = 'dce7gwpgn';
+      const uploadPreset = 'ml_default';
+      final uri = Uri.parse(
+        'https://api.cloudinary.com/v1_1/$cloudName/image/upload',
+      );
+
+      final request = http.MultipartRequest('POST', uri)
+        ..fields['upload_preset'] = uploadPreset
+        ..files.add(await http.MultipartFile.fromPath('file', file.path));
+
+      final response = await request.send();
+      final res = await http.Response.fromStream(response);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(res.body);
+        return data['secure_url'];
+      } else {
+        print("Cloudinary upload failed: ${res.body}");
+        return null;
+      }
+    } catch (e) {
+      print("Cloudinary error: $e");
+      return null;
+    }
+  }
+
   Future<void> pickAndUploadImage() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
-      final uid = FirebaseAuth.instance.currentUser!.uid;
-      final ref = FirebaseStorage.instance.ref().child(
-        'profile_images/$uid.jpg',
-      );
-      await ref.putFile(File(picked.path));
-      final url = await ref.getDownloadURL();
+      final file = File(picked.path);
+      final imageUrl = await uploadImageToCloudinary(file);
 
-      await FirebaseFirestore.instance.collection('users').doc(uid).update({
-        'profileImage': url,
-      });
+      if (imageUrl != null) {
+        final uid = FirebaseAuth.instance.currentUser!.uid;
+        await FirebaseFirestore.instance.collection('users').doc(uid).update({
+          'profileImage': imageUrl,
+        });
 
-      setState(() {
-        profileImageUrl = url;
-      });
+        setState(() {
+          profileImageUrl = imageUrl;
+        });
+      }
     }
   }
 
@@ -87,7 +113,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       child: Align(
                         alignment: Alignment.bottomRight,
                         child: Container(
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white,
                           ),
@@ -108,152 +134,85 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                   const SizedBox(height: 40),
 
-                  // ➕ Add Companies Button
-                  // ➕ Add Companies Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: Navigate to Add Companies Page
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AddCompanyScreen(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1595D2),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AddCompanyScreen(),
                         ),
-                      ),
-                      child: const Text(
-                        "Add Companies",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
+                      );
+                    },
+                    style: _buttonStyle(),
+                    child: const Text("Add Companies"),
                   ),
                   const SizedBox(height: 20),
-
-                  // 📋 Show All Orders
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: Navigate to Orders Page
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ShowAllOrdersScreen(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1595D2),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ShowAllOrdersScreen(),
                         ),
-                      ),
-                      child: const Text(
-                        "Show All Orders",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
+                      );
+                    },
+                    style: _buttonStyle(),
+                    child: const Text("Show All Orders"),
                   ),
                   const SizedBox(height: 20),
-
-                  // 💬 Show All Feedback
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: Navigate to Feedback Page
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ShowAllFeedbackScreen(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1595D2),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ShowAllFeedbackScreen(),
                         ),
-                      ),
-                      child: const Text(
-                        "Show All Feedback",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // 💬 Show All order quatity
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: Navigate to Feedback Page
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AdminReportScreen(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1595D2),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text(
-                        "Order Quantity",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
+                      );
+                    },
+                    style: _buttonStyle(),
+                    child: const Text("Show All Feedback"),
                   ),
                   const SizedBox(height: 20),
-
-                  // 💬 Show All order quatity
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        // 🔐 Sign out from Firebase Auth
-                        await FirebaseAuth.instance.signOut();
-                        // TODO: Navigate to Feedback Page
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                          (route) => false,
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1595D2),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AdminReportScreen(),
                         ),
-                      ),
-                      child: const Text(
-                        "Logout",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
+                      );
+                    },
+                    style: _buttonStyle(),
+                    child: const Text("Order Quantity"),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await FirebaseAuth.instance.signOut();
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                        (route) => false,
+                      );
+                    },
+                    style: _buttonStyle(),
+                    child: const Text("Logout"),
                   ),
                 ],
               ),
             ),
+    );
+  }
+
+  ButtonStyle _buttonStyle() {
+    return ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF1595D2),
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      minimumSize: const Size.fromHeight(50),
+      textStyle: const TextStyle(fontSize: 16, color: Colors.white),
     );
   }
 }
