@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "498232253596",
+    "project_id": "awashz-e0c1c",
+    "storage_bucket": "awashz-e0c1c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:498232253596:android:0b82dde07742dd75f06159",
+        "android_client_info": {
+          "package_name": "com.example.car_wash"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDboB7Bfs-grDt-QF394nQGZkLqfCLu9LI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
