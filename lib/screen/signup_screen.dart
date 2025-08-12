@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'login_screen.dart';
+import 'package:car_wash/screen/login_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+  final String? prefilledEmail; // ✅ Google Sign-In se aayi email
+
+  const SignUpScreen({super.key, this.prefilledEmail});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -14,13 +18,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
-  final emailController = TextEditingController();
+  late TextEditingController emailController; // late so we can init with value
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
-  String selectedRole = 'Client'; // 🔁 Default role
+  String selectedRole = 'Client';
   bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    emailController = TextEditingController(text: widget.prefilledEmail ?? '');
+  }
 
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
@@ -35,14 +45,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     try {
       setState(() => isLoading = true);
 
-      // 🔐 Create Firebase Auth user
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
             email: emailController.text.trim(),
             password: passwordController.text.trim(),
           );
 
-      // 📄 Save user data to Firestore
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid)
@@ -52,14 +60,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
             'email': emailController.text.trim(),
             'phone': phoneController.text.trim(),
             'createdAt': Timestamp.now(),
-            'role': selectedRole, // ✅ Use selected role
+            'role': selectedRole,
           });
 
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Signup successful!")));
 
-      // TODO: Navigate to relevant screen or login
+      // TODO: Navigate user to their dashboard or login
     } on FirebaseAuthException catch (e, stackTrace) {
       print("🔥 Firestore unexpected error: $e");
       print("🔥 Stack trace: $stackTrace");
@@ -79,9 +87,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         backgroundColor: const Color(0xFF1595D2),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context); // Back navigation
-          },
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+          ),
         ),
       ),
       backgroundColor: Colors.white,
@@ -129,8 +138,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     confirmPasswordController,
                     isPassword: true,
                   ),
-
-                  // 🔘 Role Selector
                   DropdownButtonFormField<String>(
                     value: selectedRole,
                     decoration: InputDecoration(
@@ -149,13 +156,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       if (value != null) setState(() => selectedRole = value);
                     },
                   ),
-
                   const SizedBox(height: 20),
                   isLoading
                       ? const CircularProgressIndicator()
                       : ElevatedButton(
                           onPressed: _signUp,
-                          child: const Text('Sign Up'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF1595D2),
                             foregroundColor: Colors.white,
@@ -164,6 +169,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
+                          child: const Text('Sign Up'),
                         ),
                 ],
               ),

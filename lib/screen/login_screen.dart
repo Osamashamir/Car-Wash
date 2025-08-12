@@ -1,10 +1,11 @@
 import 'package:car_wash/screen/AdminDashboardScreen.dart';
+import 'package:car_wash/screen/book_service_screen.dart';
 import 'package:car_wash/screen/company_order_screen.dart';
 import 'package:car_wash/screen/signup_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:car_wash/screen/book_service_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +18,101 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
+  Future<void> loginWithGoogle() async {
+    try {
+      setState(() => isLoading = true);
+
+      final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+      // force account chooser
+      await _googleSignIn.signOut();
+
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
+      );
+
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(credential);
+
+      final uid = userCredential.user!.uid;
+      final userRef = FirebaseFirestore.instance.collection('users').doc(uid);
+      final userDoc = await userRef.get();
+
+      // agar user naya hai to signup page pe bhej do
+      if (!userDoc.exists) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SignUpScreen(
+              prefilledEmail: googleUser.email, // email auto-fill
+            ),
+          ),
+        );
+        return;
+      }
+
+      // check if blocked
+      final blockCheck = await FirebaseFirestore.instance
+          .collection('feedbacks')
+          .where('userId', isEqualTo: uid)
+          .where('blocked', isEqualTo: true)
+          .get();
+
+      if (blockCheck.docs.isNotEmpty) {
+        await FirebaseAuth.instance.signOut();
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Access Denied'),
+            content: const Text('Your account has been blocked by the admin.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
+      final role = (await userRef.get()).data()?['role'];
+      if (role == 'Client') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const BookServiceScreen()),
+        );
+      } else if (role == 'Admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+        );
+      } else if (role == 'Company') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const CompanyOrderScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid user role found.')),
+        );
+      }
+    } catch (e) {
+      print("Google Sign-In Error: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Google Sign-In failed.")));
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
 
   Future<void> loginUser() async {
     setState(() => isLoading = true);
@@ -28,7 +124,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final uid = credential.user!.uid;
 
-      // 🔍 Firestore se user ka role fetch karo
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
@@ -39,7 +134,6 @@ class _LoginScreenState extends State<LoginScreen> {
         final role = data?['role'];
 
         if (role == 'Client') {
-          // 🛑 Check if client is blocked in feedbacks
           final blockCheck = await FirebaseFirestore.instance
               .collection('feedbacks')
               .where('userId', isEqualTo: uid)
@@ -66,7 +160,6 @@ class _LoginScreenState extends State<LoginScreen> {
             return;
           }
 
-          // ✅ Navigate to Client screen
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const BookServiceScreen()),
@@ -75,11 +168,6 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
-          );
-        } else if (role == 'Client') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const BookServiceScreen()),
           );
         } else if (role == 'Company') {
           Navigator.pushReplacement(
@@ -96,10 +184,6 @@ class _LoginScreenState extends State<LoginScreen> {
           const SnackBar(content: Text('User data not found in Firestore.')),
         );
       }
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? "Authentication Error.")),
-      );
     } catch (e) {
       print("Login error: $e");
       ScaffoldMessenger.of(
@@ -123,7 +207,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 Image.asset('assets/image/logo.JPG', height: 120),
                 const SizedBox(height: 40),
 
-                // Email Input
                 TextField(
                   controller: emailController,
                   decoration: InputDecoration(
@@ -137,7 +220,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Password Input
                 TextField(
                   controller: passwordController,
                   decoration: InputDecoration(
@@ -151,19 +233,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Forgot Password
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            "Password reset functionality coming soon!",
-                          ),
-                        ),
-                      );
-                    },
+                    onPressed: () {},
                     child: const Text(
                       'Forgot Password?',
                       style: TextStyle(
@@ -173,7 +246,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                // Login Button
+
                 ElevatedButton(
                   onPressed: isLoading ? null : loginUser,
                   child: isLoading
@@ -188,10 +261,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 30),
-                // Google Login (optional - inactive for now)
+
+                const SizedBox(height: 20),
                 ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: isLoading ? null : loginWithGoogle,
                   icon: const Icon(Icons.g_mobiledata, size: 28),
                   label: const Text("Sign in with Google"),
                   style: ElevatedButton.styleFrom(
@@ -203,9 +276,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
-                // Signup Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

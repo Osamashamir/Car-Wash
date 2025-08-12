@@ -144,7 +144,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       );
                     },
                     style: _buttonStyle(),
-                    child: const Text("Add Companies"),
+                    child: const Text(
+                      "Add Companies",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
@@ -157,7 +160,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       );
                     },
                     style: _buttonStyle(),
-                    child: const Text("Show All Orders"),
+                    child: const Text(
+                      "Show All Orders",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
@@ -170,7 +176,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       );
                     },
                     style: _buttonStyle(),
-                    child: const Text("Show All Feedback"),
+                    child: const Text(
+                      "Show All Feedback",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
@@ -183,7 +192,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       );
                     },
                     style: _buttonStyle(),
-                    child: const Text("Order Quantity"),
+                    child: const Text(
+                      "Order Quantity",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
@@ -198,7 +210,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       );
                     },
                     style: _buttonStyle(),
-                    child: const Text("Logout"),
+                    child: const Text(
+                      "Logout",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
                   ),
                 ],
               ),
