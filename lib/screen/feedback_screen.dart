@@ -129,6 +129,36 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     }
   }
 
+  String userName = "";
+  @override
+  void initState() {
+    super.initState();
+    fetchUserName();
+  }
+
+  Future<void> fetchUserName() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (userDoc.exists) {
+        final data = userDoc.data();
+        final firstName = data?['firstName'] ?? '';
+        final lastName = data?['lastName'] ?? '';
+        setState(() {
+          userName = "$firstName $lastName".trim();
+        });
+      }
+    } catch (e) {
+      print("Error fetching user name: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,10 +181,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                       backgroundImage: AssetImage('assets/image/logo.JPG'),
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      "Muhammad Osama",
+                    Text(
+                      userName.isNotEmpty ? userName : "Loading...",
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),

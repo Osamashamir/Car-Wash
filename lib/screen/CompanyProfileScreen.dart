@@ -2,10 +2,10 @@ import 'package:car_wash/screen/CompanyReportScreen.dart';
 import 'package:car_wash/screen/CompanyViewOrderScreen.dart';
 import 'package:car_wash/screen/company_order_screen.dart';
 import 'package:car_wash/screen/login_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'dart:io';
 
 class CompanyProfileScreen extends StatefulWidget {
@@ -18,6 +18,31 @@ class CompanyProfileScreen extends StatefulWidget {
 class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
+
+  String companyName = "";
+  String? logoUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCompanyData();
+  }
+
+  Future<void> fetchCompanyData() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+      if (doc.exists) {
+        setState(() {
+          companyName = doc['name'] ?? "Company";
+          logoUrl = doc['logoUrl'];
+        });
+      }
+    }
+  }
 
   Future<void> pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -59,11 +84,10 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
             const SizedBox(height: 12),
 
             // 🏢 Company Name
-            const Text(
-              'A Wash Z - Company',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Text(
+              companyName.isNotEmpty ? companyName : "Loading...",
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 30),
 
             // 📦 Order Screen

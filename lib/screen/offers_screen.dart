@@ -15,11 +15,36 @@ class OffersScreen extends StatefulWidget {
 class _OffersScreenState extends State<OffersScreen> {
   bool hasFreeWash = false;
   bool isLoading = true;
+  String userName = "";
 
   @override
   void initState() {
     super.initState();
+    fetchUserName();
     checkFreeWashStatus();
+  }
+
+  Future<void> fetchUserName() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users') // 🔹 apni collection ka naam yahan daalo
+          .doc(user.uid)
+          .get();
+
+      if (userDoc.exists) {
+        final data = userDoc.data();
+        final firstName = data?['firstName'] ?? '';
+        final lastName = data?['lastName'] ?? '';
+        setState(() {
+          userName = "$firstName $lastName".trim();
+        });
+      }
+    } catch (e) {
+      print("Error fetching user name: $e");
+    }
   }
 
   Future<void> checkFreeWashStatus() async {
@@ -64,13 +89,15 @@ class _OffersScreenState extends State<OffersScreen> {
                     backgroundImage: AssetImage('assets/image/logo.JPG'),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    "Muhammad Osama",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Text(
+                    userName.isNotEmpty ? userName : "Loading...",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 30),
 
-                  // 🎁 Free Wash Banner
                   if (hasFreeWash) ...[
                     Container(
                       width: double.infinity,
@@ -101,16 +128,13 @@ class _OffersScreenState extends State<OffersScreen> {
                     const SizedBox(height: 30),
                   ],
 
-                  // 🔹 Monthly Package
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Optional: navigate to package details
-                      },
+                      onPressed: () {},
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        foregroundColor: Color(0xFF1595D2),
+                        foregroundColor: const Color(0xFF1595D2),
                         side: const BorderSide(color: Color(0xFF1595D2)),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(

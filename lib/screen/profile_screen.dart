@@ -1,15 +1,19 @@
-import 'package:car_wash/screen/ClientOrderViewScreen.dart';
-import 'package:car_wash/screen/book_service_screen.dart';
-import 'package:car_wash/screen/feedback_screen.dart';
-import 'package:car_wash/screen/login_screen.dart';
-import 'package:car_wash/screen/offers_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'ClientOrderViewScreen.dart';
+import 'book_service_screen.dart';
+import 'feedback_screen.dart';
+import 'login_screen.dart';
 import 'offers_screen.dart';
-// ✅ Update path as needed
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> getUserData() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    return await FirebaseFirestore.instance.collection('users').doc(uid).get();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,111 +22,122 @@ class ProfileScreen extends StatelessWidget {
         title: const Text("My Profile"),
         backgroundColor: const Color(0xFF1595D2),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 👤 Profile Picture
-            Center(
-              child: Column(
-                children: [
-                  const CircleAvatar(
-                    radius: 50,
-                    backgroundImage: AssetImage('assets/image/logo.JPG'),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    "Muhammad Osama",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
+      body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        future: getUserData(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: Text("User data not found"));
+          }
 
-            const SizedBox(height: 30),
+          final userData = snapshot.data!.data()!;
+          final fullName =
+              "${userData['firstName'] ?? ''} ${userData['lastName'] ?? ''}";
 
-            // 🔽 Menu Items
-            ListTile(
-              leading: const Icon(Icons.history, color: Color(0xFF1595D2)),
-              title: const Text("View Order"),
-              onTap: () {
-                // TODO: Navigate to Order History
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ClientOrderViewScreen(),
+          return Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 👤 Profile Picture & Name
+                Center(
+                  child: Column(
+                    children: [
+                      const CircleAvatar(
+                        radius: 50,
+                        backgroundImage: AssetImage('assets/image/logo.JPG'),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        fullName,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.card_giftcard,
-                color: Color(0xFF1595D2),
-              ),
-              title: const Text("Offers"),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const OffersScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.feedback, color: Color(0xFF1595D2)),
-              title: const Text("Feedback"),
-              onTap: () {
-                // TODO: Navigate to Feedback
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const FeedbackScreen(),
+                ),
+                const SizedBox(height: 30),
+
+                // 🔽 Menu Items
+                ListTile(
+                  leading: const Icon(Icons.history, color: Color(0xFF1595D2)),
+                  title: const Text("View Order"),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ClientOrderViewScreen(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.card_giftcard,
+                    color: Color(0xFF1595D2),
                   ),
-                );
-              },
+                  title: const Text("Offers"),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const OffersScreen(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.feedback, color: Color(0xFF1595D2)),
+                  title: const Text("Feedback"),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FeedbackScreen(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.logout, color: Color(0xFF1595D2)),
+                  title: const Text("Logout"),
+                  onTap: () async {
+                    await FirebaseAuth.instance.signOut();
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Color(0xFF1595D2)),
-              title: const Text("Logout"),
-              onTap: () async {
-                // 🔐 Sign out from Firebase Auth
-                await FirebaseAuth.instance.signOut();
-                // TODO: Perform Logout
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (Context) => const LoginScreen()),
-                  (route) => false,
-                );
-              },
-            ),
-          ],
-        ),
+          );
+        },
       ),
       bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Color(0xFF1595D2),
+        selectedItemColor: const Color(0xFF1595D2),
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
-        currentIndex: 0, // Book is selected initially
+        currentIndex: 0,
         onTap: (index) {
-          // TODO: Navigation logic (optional for now)
-          // Example: Navigator.push(...);
           if (index == 1) {
-            // 👤 Navigate to Profile Page
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const BookServiceScreen()),
             );
-          } else if (index == 0) {
-            // 🚗 Stay on Book Page (already here)
           } else if (index == 2) {
-            // 🎁 TODO: Navigate to Offers Page
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const OffersScreen()),
             );
           } else if (index == 3) {
-            // 💬 TODO: Navigate to Feedback Page
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const FeedbackScreen()),
