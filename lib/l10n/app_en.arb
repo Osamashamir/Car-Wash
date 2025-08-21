@@ -1,0 +1,11 @@
+{
+  "email": "Email",
+  "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "login": "Login",
+  "signInWithGoogle": "Sign in with Google",
+    "dontHaveAnAccount": "Don't have an account?",
+        "signUp": "Sign Up"
+
+
+}

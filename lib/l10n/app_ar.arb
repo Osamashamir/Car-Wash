@@ -1,0 +1,11 @@
+{
+  "email": "بريد إلكتروني",
+  "password": "كلمة المرور",
+    "forgotPassword": "هل نسيت كلمة السر؟",
+      "login": "تسجيل الدخول",
+  "signInWithGoogle": "تسجيل الدخول باستخدام جوجل",
+    "dontHaveAnAccount": "ليس لديك حساب؟",
+        "signUp": "اشتراك"
+
+
+}

@@ -1,0 +1,11 @@
+{
+  "email": "Correo electrónico",
+  "password": "Contraseña",
+    "forgotPassword": "¿Has olvidado tu contraseña?",
+    "login": "Acceso",
+  "signInWithGoogle": "Iniciar sesión con Google",
+    "dontHaveAnAccount": "¿No tienes una cuenta?",
+        "signUp": "Inscribirse"
+
+
+}
