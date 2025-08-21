@@ -28,11 +28,34 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
 
   List<String> serviceList = [];
   bool isLoadingServices = true;
+  String userName = ""; // 🔹 Dynamic name store karne ke liye
 
   @override
   void initState() {
     super.initState();
     loadServicesFromFirestore();
+    fetchUserName(); // 🔹 Naam laane ka function
+  }
+
+  Future<void> fetchUserName() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        if (doc.exists) {
+          String firstName = doc.data()?['firstName'] ?? '';
+          String lastName = doc.data()?['lastName'] ?? '';
+          setState(() {
+            userName = "$firstName $lastName".trim();
+          });
+        }
+      }
+    } catch (e) {
+      print("Error fetching user name: $e");
+    }
   }
 
   Future<void> loadServicesFromFirestore() async {
@@ -110,10 +133,13 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            const Center(
+            Center(
               child: Text(
-                "Muhammad Osama",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                userName.isNotEmpty ? userName : "Loading...",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 30),

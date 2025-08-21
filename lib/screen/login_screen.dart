@@ -23,86 +23,58 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => isLoading = true);
 
       final GoogleSignIn _googleSignIn = GoogleSignIn();
-
-      // force account chooser
-      await _googleSignIn.signOut();
+      await _googleSignIn.signOut(); // force chooser
 
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return;
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      // 👇 Yahan FirebaseAuth ka use hi mat karo abhi
+      final email = googleUser.email;
 
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        idToken: googleAuth.idToken,
-        accessToken: googleAuth.accessToken,
-      );
+      // Check if Firestore me already account exist hai
+      final userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
 
-      final UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithCredential(credential);
-
-      final uid = userCredential.user!.uid;
-      final userRef = FirebaseFirestore.instance.collection('users').doc(uid);
-      final userDoc = await userRef.get();
-
-      // agar user naya hai to signup page pe bhej do
-      if (!userDoc.exists) {
+      if (userQuery.docs.isEmpty) {
+        // Naya user → signup page pe bhejo (email prefilled hoga)
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => SignUpScreen(
-              prefilledEmail: googleUser.email, // email auto-fill
-            ),
+            builder: (_) => SignUpScreen(prefilledEmail: email),
           ),
-        );
-        return;
-      }
-
-      // check if blocked
-      final blockCheck = await FirebaseFirestore.instance
-          .collection('feedbacks')
-          .where('userId', isEqualTo: uid)
-          .where('blocked', isEqualTo: true)
-          .get();
-
-      if (blockCheck.docs.isNotEmpty) {
-        await FirebaseAuth.instance.signOut();
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Access Denied'),
-            content: const Text('Your account has been blocked by the admin.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-        return;
-      }
-
-      final role = (await userRef.get()).data()?['role'];
-      if (role == 'Client') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const BookServiceScreen()),
-        );
-      } else if (role == 'Admin') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
-        );
-      } else if (role == 'Company') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const CompanyOrderScreen()),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid user role found.')),
+        // Purana user → uska uid nikal k auth karwa do
+        final googleAuth = await googleUser.authentication;
+        final credential = GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+          accessToken: googleAuth.accessToken,
         );
+
+        final userCredential = await FirebaseAuth.instance.signInWithCredential(
+          credential,
+        );
+
+        final role = userQuery.docs.first['role'];
+
+        if (role == 'Client') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const BookServiceScreen()),
+          );
+        } else if (role == 'Admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+          );
+        } else if (role == 'Company') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const CompanyOrderScreen()),
+          );
+        }
       }
     } catch (e) {
       print("Google Sign-In Error: $e");

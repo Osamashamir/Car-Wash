@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login_screen.dart';
-import 'package:car_wash/screen/login_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   final String? prefilledEmail; // ✅ Google Sign-In se aayi email
@@ -18,7 +17,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
-  late TextEditingController emailController; // late so we can init with value
+  late TextEditingController emailController;
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
@@ -45,12 +44,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
     try {
       setState(() => isLoading = true);
 
+      // ✅ Create user in FirebaseAuth
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
             email: emailController.text.trim(),
             password: passwordController.text.trim(),
           );
 
+      // ✅ Store user data in Firestore
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid)
@@ -67,7 +68,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
         context,
       ).showSnackBar(const SnackBar(content: Text("Signup successful!")));
 
-      // TODO: Navigate user to their dashboard or login
+      // ✅ Signup ke baad direct LoginScreen par bhejo
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
     } on FirebaseAuthException catch (e, stackTrace) {
       print("🔥 Firestore unexpected error: $e");
       print("🔥 Stack trace: $stackTrace");
@@ -87,10 +92,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
         backgroundColor: const Color(0xFF1595D2),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
-          ),
+          onPressed: () {
+            // ✅ Back arrow click -> LoginScreen
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            );
+          },
         ),
       ),
       backgroundColor: Colors.white,
@@ -138,6 +146,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     confirmPasswordController,
                     isPassword: true,
                   ),
+
                   DropdownButtonFormField<String>(
                     value: selectedRole,
                     decoration: InputDecoration(
