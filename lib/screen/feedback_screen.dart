@@ -1,3 +1,4 @@
+import 'package:car_wash/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
@@ -16,7 +17,19 @@ class FeedbackScreen extends StatefulWidget {
 
 class _FeedbackScreenState extends State<FeedbackScreen> {
   String selectedType = 'Feedback';
-  final List<String> feedbackTypes = ['Feedback', 'Complain'];
+  late List<String> feedbackTypes;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final loc = AppLocalizations.of(context)!;
+    feedbackTypes = [
+      loc.feedback, // or just 'Feedback' if you want
+      loc.complain,
+    ];
+    selectedType = feedbackTypes[0]; // ✅ first item of the list
+  }
+
   Uint8List? _screenshotBytes;
   final picker = ImagePicker();
   final TextEditingController notesController = TextEditingController();
@@ -115,7 +128,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Feedback submitted successfully!")),
+        SnackBar(content: Text(AppLocalizations.of(context)!.feedbackSuccess)),
       );
       Navigator.pop(context);
     } catch (e) {
@@ -163,7 +176,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Feedback"),
+        title: Text(AppLocalizations.of(context)!.feedback),
         backgroundColor: const Color(0xFF1595D2),
       ),
       body: LayoutBuilder(
@@ -194,15 +207,17 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     // Dropdown
                     DropdownButtonFormField<String>(
                       value: selectedType,
-                      decoration: const InputDecoration(
-                        labelText: 'Select Type',
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.selectType,
                         border: OutlineInputBorder(),
                       ),
                       items: feedbackTypes.map((type) {
                         return DropdownMenuItem(value: type, child: Text(type));
                       }).toList(),
                       onChanged: (value) {
-                        setState(() => selectedType = value!);
+                        if (value != null) {
+                          setState(() => selectedType = value);
+                        }
                       },
                     ),
                     const SizedBox(height: 20),
@@ -220,7 +235,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                         ),
                         alignment: Alignment.center,
                         child: _screenshotBytes == null
-                            ? const Text("Tap to add screenshot")
+                            ? Text(AppLocalizations.of(context)!.addScreenshot)
                             : Image.memory(
                                 _screenshotBytes!,
                                 fit: BoxFit.cover,
@@ -235,8 +250,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     TextField(
                       controller: notesController,
                       maxLines: 2,
-                      decoration: const InputDecoration(
-                        labelText: "Additional Notes",
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(
+                          context,
+                        )!.additionalNotes,
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -254,8 +271,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                       ),
                       child: isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "Submit",
+                          : Text(
+                              AppLocalizations.of(context)!.submit,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,

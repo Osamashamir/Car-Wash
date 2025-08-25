@@ -1,3 +1,4 @@
+import 'package:car_wash/l10n/app_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -17,9 +18,10 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Profile"),
+        title: Text(loc.myProfile),
         backgroundColor: const Color(0xFF1595D2),
       ),
       body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -65,7 +67,7 @@ class ProfileScreen extends StatelessWidget {
                 // 🔽 Menu Items
                 ListTile(
                   leading: const Icon(Icons.history, color: Color(0xFF1595D2)),
-                  title: const Text("View Order"),
+                  title: Text(loc.viewOrder),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -80,7 +82,7 @@ class ProfileScreen extends StatelessWidget {
                     Icons.card_giftcard,
                     color: Color(0xFF1595D2),
                   ),
-                  title: const Text("Offers"),
+                  title: Text(loc.offer),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -92,7 +94,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.feedback, color: Color(0xFF1595D2)),
-                  title: const Text("Feedback"),
+                  title: Text(loc.feedback),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -104,7 +106,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.logout, color: Color(0xFF1595D2)),
-                  title: const Text("Logout"),
+                  title: Text(loc.logout),
                   onTap: () async {
                     await FirebaseAuth.instance.signOut();
                     Navigator.pushAndRemoveUntil(

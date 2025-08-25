@@ -5,5 +5,60 @@
 "login": "لاگ ان",
 "signInWithGoogle": "گوگل کے ساتھ سائن ان کریں",
 "dontHaveAnAccount": "کھاتہ نہیں ہے؟",
-"signUp": "سائن اپ"
+"signUp": "سائن اپ",
+"bookService": "سروس بک کروائیں",
+"selectServiceType": "سروس کی قسم منتخب کریں",
+"numberOfCars": "گاڑیوں کی تعداد",
+
+  "carDetails": "گاڑی {index} کی تفصیلات",
+  "@carDetails": {
+    "description": "لیبل جو کار نمبر کے ساتھ کار کی تفصیلات دکھاتا ہے",
+    "placeholders": {
+      "index": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+
+"selectDate": "تاریخ منتخب کریں",
+"chooseDate": "ایک تاریخ منتخب کریں",
+"selectTime": "وقت منتخب کریں",
+"chooseTime": "وقت منتخب کریں",
+"address": "پتہ",
+"currentLocation": "موجودہ مقام",
+"fillRequiredFields": "براہ کرم تمام ضروری فیلڈز بھریں",
+"bookingSuccess": "بکنگ کامیابی سے جمع کرائی گئی!",
+"bookNow": "ابھی بک کریں",
+"profile": "پروفائل",
+"book": "بک کریں",
+"offer": "آفر",
+"feedback": "فیڈ بیک",
+
+"myProfile": "میرا پروفائل",
+"viewOrder": "آرڈر دیکھیں",
+"offers": "آفرز",
+"feedback": "فیڈ بیک",
+"logout": "لاگ آؤٹ",
+
+"congratulations": "🎉 مبارک ہو!",
+"freeCarWash": "آپ کو ایک مفت کار واش ملا ہے",
+
+"feedback": "فیڈ بیک",
+"complain": "شکایت",
+"feedbackSuccess": "فیڈ بیک کامیابی سے جمع ہو گیا!",
+"selectType": "قسم منتخب کریں",
+"addScreenshot": "اسکرین شاٹ شامل کرنے کے لیے ٹیپ کریں",
+"additionalNotes": "اضافی نوٹس",
+"submit": "جمع کروائیں",
+
+"yourOrders": "آپ کے آرڈرز",
+"filterByDate": "تاریخ کے لحاظ سے فلٹر کریں",
+"noOrdersFound": "کوئی آرڈر نہیں ملا۔",
+"giveFeedback": "فیڈ بیک دیں",
+"today": "آج",
+"thisWeek": "اس ہفتے",
+"thisMonth": "اس مہینے",
+"thisYear": "اس سال",
+"all": "سب"
 }

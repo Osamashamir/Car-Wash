@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'profile_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:car_wash/l10n/app_localizations.dart';
 
 class BookServiceScreen extends StatefulWidget {
   const BookServiceScreen({super.key});
@@ -116,9 +118,11 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Book a Service"),
+        title: Text(loc.bookService),
         backgroundColor: const Color(0xFF1595D2),
       ),
       body: SingleChildScrollView(
@@ -143,8 +147,8 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
               ),
             ),
             const SizedBox(height: 30),
-            const Text(
-              "Select Service Type",
+            Text(
+              loc.selectServiceType,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
@@ -168,8 +172,8 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                     },
                   ),
             const SizedBox(height: 20),
-            const Text(
-              "Number of Cars",
+            Text(
+              loc.numberOfCars,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
@@ -200,7 +204,9 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                   child: TextField(
                     controller: carControllers[index],
                     decoration: InputDecoration(
-                      labelText: 'Car ${index + 1} Details',
+                      labelText: AppLocalizations.of(
+                        context,
+                      )!.carDetails(index + 1),
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -222,14 +228,14 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                 }
               },
               child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Select Date',
+                decoration: InputDecoration(
+                  labelText: loc.selectDate,
                   border: OutlineInputBorder(),
                 ),
                 child: Text(
                   selectedDate != null
                       ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
-                      : 'Choose a date',
+                      : loc.chooseDate,
                 ),
               ),
             ),
@@ -247,22 +253,22 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                 }
               },
               child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Select Time',
+                decoration: InputDecoration(
+                  labelText: loc.selectTime,
                   border: OutlineInputBorder(),
                 ),
                 child: Text(
                   selectedTime != null
                       ? selectedTime!.format(context)
-                      : 'Choose time',
+                      : loc.chooseTime,
                 ),
               ),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: addressController,
-              decoration: const InputDecoration(
-                labelText: 'Address',
+              decoration: InputDecoration(
+                labelText: loc.address,
                 border: OutlineInputBorder(),
               ),
             ),
@@ -271,7 +277,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
               controller: locationController,
               readOnly: true,
               decoration: InputDecoration(
-                labelText: 'Current Location',
+                labelText: loc.currentLocation,
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.my_location),
@@ -289,9 +295,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                       selectedDate == null ||
                       selectedTime == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please fill all required fields'),
-                      ),
+                      SnackBar(content: Text(loc.fillRequiredFields)),
                     );
                     return;
                   }
@@ -322,11 +326,9 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                         .collection('orders')
                         .add(orderData);
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Booking submitted successfully!'),
-                      ),
-                    );
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(loc.bookingSuccess)));
 
                     setState(() {
                       selectedService = null;
@@ -353,8 +355,8 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text(
-                  'Book Now',
+                child: Text(
+                  loc.bookNow,
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),
@@ -385,19 +387,19 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
             );
           }
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: loc.profile),
           BottomNavigationBarItem(
             icon: Icon(Icons.local_car_wash),
-            label: 'Book',
+            label: loc.book,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.card_giftcard),
-            label: 'Offer',
+            label: loc.offer,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.feedback),
-            label: 'Feedback',
+            label: loc.feedback,
           ),
         ],
       ),

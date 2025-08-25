@@ -1,3 +1,4 @@
+import 'package:car_wash/l10n/app_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,21 +13,24 @@ class ClientOrderViewScreen extends StatefulWidget {
 
 class _ClientOrderViewScreenState extends State<ClientOrderViewScreen> {
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
-  String selectedFilter = 'All';
+  String selectedFilter = 'all'; // use key instead of text
 
-  final List<String> filterOptions = [
-    'Today',
-    'This Week',
-    'This Month',
-    'This Year',
-    'All',
-  ];
+  late Map<String, String> filterOptions; // key -> localized label
 
   @override
   Widget build(BuildContext context) {
+    // yahan localization ka use karo
+    filterOptions = {
+      'today': AppLocalizations.of(context)!.today,
+      'thisWeek': AppLocalizations.of(context)!.thisWeek,
+      'thisMonth': AppLocalizations.of(context)!.thisMonth,
+      'thisYear': AppLocalizations.of(context)!.thisYear,
+      'all': AppLocalizations.of(context)!.all,
+    };
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Your Orders"),
+        title: Text(AppLocalizations.of(context)!.yourOrders),
         backgroundColor: const Color(0xFF1595D2),
       ),
       body: Column(
@@ -35,10 +39,10 @@ class _ClientOrderViewScreenState extends State<ClientOrderViewScreen> {
             padding: const EdgeInsets.all(12),
             child: DropdownButtonFormField<String>(
               value: selectedFilter,
-              items: filterOptions.map((filter) {
+              items: filterOptions.entries.map((entry) {
                 return DropdownMenuItem<String>(
-                  value: filter,
-                  child: Text(filter),
+                  value: entry.key,
+                  child: Text(entry.value),
                 );
               }).toList(),
               onChanged: (value) {
@@ -48,9 +52,9 @@ class _ClientOrderViewScreenState extends State<ClientOrderViewScreen> {
                   });
                 }
               },
-              decoration: const InputDecoration(
-                labelText: 'Filter by Date',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.filterByDate,
+                border: const OutlineInputBorder(),
               ),
             ),
           ),
@@ -70,13 +74,12 @@ class _ClientOrderViewScreenState extends State<ClientOrderViewScreen> {
                 }
 
                 final allOrders = snapshot.data!.docs;
-
                 final now = DateTime.now();
+
                 final filteredOrders = allOrders.where((doc) {
                   final data = doc.data() as Map<String, dynamic>;
                   final createdAt = data['createdAt'];
 
-                  // Skip if not a valid Timestamp
                   if (createdAt == null || createdAt is! Timestamp) {
                     return false;
                   }
@@ -84,13 +87,13 @@ class _ClientOrderViewScreenState extends State<ClientOrderViewScreen> {
                   final orderDate = createdAt.toDate();
 
                   switch (selectedFilter) {
-                    case 'Today':
+                    case 'today':
                       final todayStart = DateTime(now.year, now.month, now.day);
                       final todayEnd = todayStart.add(const Duration(days: 1));
                       return orderDate.isAfter(todayStart) &&
                           orderDate.isBefore(todayEnd);
 
-                    case 'This Week':
+                    case 'thisWeek':
                       final weekStart = now.subtract(
                         Duration(days: now.weekday - 1),
                       );
@@ -98,26 +101,28 @@ class _ClientOrderViewScreenState extends State<ClientOrderViewScreen> {
                       return orderDate.isAfter(weekStart) &&
                           orderDate.isBefore(weekEnd);
 
-                    case 'This Month':
+                    case 'thisMonth':
                       final monthStart = DateTime(now.year, now.month);
                       final nextMonth = DateTime(now.year, now.month + 1);
                       return orderDate.isAfter(monthStart) &&
                           orderDate.isBefore(nextMonth);
 
-                    case 'This Year':
+                    case 'thisYear':
                       final yearStart = DateTime(now.year);
                       final nextYear = DateTime(now.year + 1);
                       return orderDate.isAfter(yearStart) &&
                           orderDate.isBefore(nextYear);
 
-                    case 'All':
+                    case 'all':
                     default:
                       return true;
                   }
                 }).toList();
 
                 if (filteredOrders.isEmpty) {
-                  return const Center(child: Text('No orders found.'));
+                  return Center(
+                    child: Text(AppLocalizations.of(context)!.noOrdersFound),
+                  );
                 }
 
                 return ListView.builder(
@@ -155,7 +160,9 @@ class _ClientOrderViewScreenState extends State<ClientOrderViewScreen> {
                                   Icons.feedback,
                                   color: Colors.white,
                                 ),
-                                label: const Text("Give Feedback"),
+                                label: Text(
+                                  AppLocalizations.of(context)!.giveFeedback,
+                                ),
                                 onPressed: () {
                                   Navigator.push(
                                     context,

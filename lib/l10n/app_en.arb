@@ -5,7 +5,61 @@
     "login": "Login",
   "signInWithGoogle": "Sign in with Google",
     "dontHaveAnAccount": "Don't have an account?",
-        "signUp": "Sign Up"
+        "signUp": "Sign Up",
+        "bookService": "Book a Service",
+"selectServiceType": "Select Service Type",
+"numberOfCars": "Number of Cars",
 
+"carDetails": "Car {index} Details",
+  "@carDetails": {
+    "description": "Label for car details with car number",
+    "placeholders": {
+      "index": {
+        "type": "int",
+        "example": "1"
+         }
+    }
+  },
+"selectDate": "Select Date",
+"chooseDate": "Choose a date",
+"selectTime": "Select Time",
+"chooseTime": "Choose time",
+"address": "Address",
+"currentLocation": "Current Location",
+"fillRequiredFields": "Please fill all required fields",
+"bookingSuccess": "Booking submitted successfully!",
+"bookNow": "Book Now",
+
+"profile": "Profile",
+"book": "Book",
+"offer": "Offer",
+"feedback": "Feedback",
+
+"myProfile": "My Profile",
+"viewOrder": "View Order",
+"offers": "Offers",
+"feedback": "Feedback",
+"logout": "Logout",
+
+"congratulations": "🎉 Congratulations!",
+"freeCarWash": "You've got 1 Free Car Wash",
+
+"feedback": "Feedback",
+"complain": "Complain",
+"feedbackSuccess": "Feedback submitted successfully!",
+"selectType": "Select Type",
+"addScreenshot": "Tap to add screenshot",
+"additionalNotes": "Additional Notes",
+"submit": "Submit",
+
+"yourOrders": "Your Orders",
+"filterByDate": "Filter by Date",
+"noOrdersFound": "No orders found.",
+"giveFeedback": "Give Feedback",
+"today": "Today",
+"thisWeek": "This Week",
+"thisMonth": "This Month",
+"thisYear": "This Year",
+"all": "All"
 
 }

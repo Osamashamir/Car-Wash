@@ -142,6 +142,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign Up'**
   String get signUp;
+
+  /// No description provided for @bookService.
+  ///
+  /// In en, this message translates to:
+  /// **'Book a Service'**
+  String get bookService;
+
+  /// No description provided for @selectServiceType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Service Type'**
+  String get selectServiceType;
+
+  /// No description provided for @numberOfCars.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of Cars'**
+  String get numberOfCars;
+
+  /// Label for car details with car number
+  ///
+  /// In en, this message translates to:
+  /// **'Car {index} Details'**
+  String carDetails(int index);
+
+  /// No description provided for @selectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Date'**
+  String get selectDate;
+
+  /// No description provided for @chooseDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a date'**
+  String get chooseDate;
+
+  /// No description provided for @selectTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Time'**
+  String get selectTime;
+
+  /// No description provided for @chooseTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose time'**
+  String get chooseTime;
+
+  /// No description provided for @address.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get address;
+
+  /// No description provided for @currentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Location'**
+  String get currentLocation;
+
+  /// No description provided for @fillRequiredFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill all required fields'**
+  String get fillRequiredFields;
+
+  /// No description provided for @bookingSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking submitted successfully!'**
+  String get bookingSuccess;
+
+  /// No description provided for @bookNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Book Now'**
+  String get bookNow;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @book.
+  ///
+  /// In en, this message translates to:
+  /// **'Book'**
+  String get book;
+
+  /// No description provided for @offer.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer'**
+  String get offer;
+
+  /// No description provided for @feedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get feedback;
+
+  /// No description provided for @myProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile'**
+  String get myProfile;
+
+  /// No description provided for @viewOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'View Order'**
+  String get viewOrder;
+
+  /// No description provided for @offers.
+  ///
+  /// In en, this message translates to:
+  /// **'Offers'**
+  String get offers;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// No description provided for @congratulations.
+  ///
+  /// In en, this message translates to:
+  /// **'🎉 Congratulations!'**
+  String get congratulations;
+
+  /// No description provided for @freeCarWash.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve got 1 Free Car Wash'**
+  String get freeCarWash;
+
+  /// No description provided for @complain.
+  ///
+  /// In en, this message translates to:
+  /// **'Complain'**
+  String get complain;
+
+  /// No description provided for @feedbackSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback submitted successfully!'**
+  String get feedbackSuccess;
+
+  /// No description provided for @selectType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Type'**
+  String get selectType;
+
+  /// No description provided for @addScreenshot.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to add screenshot'**
+  String get addScreenshot;
+
+  /// No description provided for @additionalNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional Notes'**
+  String get additionalNotes;
+
+  /// No description provided for @submit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get submit;
+
+  /// No description provided for @yourOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Orders'**
+  String get yourOrders;
+
+  /// No description provided for @filterByDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by Date'**
+  String get filterByDate;
+
+  /// No description provided for @noOrdersFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders found.'**
+  String get noOrdersFound;
+
+  /// No description provided for @giveFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Give Feedback'**
+  String get giveFeedback;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get thisWeek;
+
+  /// No description provided for @thisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This Month'**
+  String get thisMonth;
+
+  /// No description provided for @thisYear.
+  ///
+  /// In en, this message translates to:
+  /// **'This Year'**
+  String get thisYear;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

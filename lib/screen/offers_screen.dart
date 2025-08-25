@@ -1,3 +1,4 @@
+import 'package:car_wash/l10n/app_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -73,9 +74,10 @@ class _OffersScreenState extends State<OffersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Offers"),
+        title: Text(loc.offers),
         backgroundColor: const Color(0xFF1595D2),
       ),
       body: isLoading
@@ -115,8 +117,8 @@ class _OffersScreenState extends State<OffersScreen> {
                         ),
                       ),
                       alignment: Alignment.center,
-                      child: const Text(
-                        "🎉 Congratulations!\nYou've got 1 Free Car Wash",
+                      child: Text(
+                        '${loc.congratulations}\n${loc.freeCarWash}',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -128,25 +130,25 @@ class _OffersScreenState extends State<OffersScreen> {
                     const SizedBox(height: 30),
                   ],
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF1595D2),
-                        side: const BorderSide(color: Color(0xFF1595D2)),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text(
-                        "Monthly Package – 10% OFF",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ),
+                  // SizedBox(
+                  //   width: double.infinity,
+                  //   child: ElevatedButton(
+                  //     onPressed: () {},
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: Colors.white,
+                  //       foregroundColor: const Color(0xFF1595D2),
+                  //       side: const BorderSide(color: Color(0xFF1595D2)),
+                  //       padding: const EdgeInsets.symmetric(vertical: 16),
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(10),
+                  //       ),
+                  //     ),
+                  //     child: const Text(
+                  //       "Monthly Package – 10% OFF",
+                  //       style: TextStyle(fontSize: 16),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
@@ -173,19 +175,19 @@ class _OffersScreenState extends State<OffersScreen> {
             );
           }
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: loc.profile),
           BottomNavigationBarItem(
             icon: Icon(Icons.local_car_wash),
-            label: 'Book',
+            label: loc.book,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.card_giftcard),
-            label: 'Offer',
+            label: loc.offer,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.feedback),
-            label: 'Feedback',
+            label: loc.feedback,
           ),
         ],
       ),
